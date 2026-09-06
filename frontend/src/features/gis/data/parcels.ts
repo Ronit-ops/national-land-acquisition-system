@@ -1,0 +1,98 @@
+import type { GisParcel } from "../types/gis";
+
+export const gisParcels: GisParcel[] = [
+  {
+    id: "gis-parcel-001",
+    parcelId: "PUN-001245",
+    surveyNumber: "145/2A",
+    recordedRightHolder: "Rajesh Kumar",
+    district: "Pune",
+    village: "Wagholi",
+    areaHectares: 1.84,
+    landUse: "Agricultural",
+    acquisitionStatus: "RR_IN_PROGRESS",
+    coordinates: [
+      [73.9768, 18.5754],
+      [73.9795, 18.5754],
+      [73.9795, 18.5777],
+      [73.9768, 18.5777],
+      [73.9768, 18.5754],
+    ],
+  },
+
+  {
+    id: "gis-parcel-002",
+    parcelId: "PUN-001246",
+    surveyNumber: "146/1",
+    recordedRightHolder: "Meena Patil",
+    district: "Pune",
+    village: "Kharadi",
+    areaHectares: 1.12,
+    landUse: "Residential",
+    acquisitionStatus: "UNDER_ACQUISITION",
+    coordinates: [
+      [73.9552, 18.5521],
+      [73.9581, 18.5521],
+      [73.9581, 18.5545],
+      [73.9552, 18.5545],
+      [73.9552, 18.5521],
+    ],
+  },
+
+  {
+    id: "gis-parcel-003",
+    parcelId: "PUN-001247",
+    surveyNumber: "147/3B",
+    recordedRightHolder: "Abdul Rahman",
+    district: "Pune",
+    village: "Manjari",
+    areaHectares: 2.46,
+    landUse: "Agricultural",
+    acquisitionStatus: "ON_HOLD",
+    coordinates: [
+      [73.9395, 18.5352],
+      [73.9426, 18.5352],
+      [73.9426, 18.5377],
+      [73.9395, 18.5377],
+      [73.9395, 18.5352],
+    ],
+  },
+
+  {
+    id: "gis-parcel-004",
+    parcelId: "NAG-004812",
+    surveyNumber: "82/4",
+    recordedRightHolder: "Sunita Deshmukh",
+    district: "Nagpur",
+    village: "Hingna",
+    areaHectares: 0.89,
+    landUse: "Agricultural",
+    acquisitionStatus: "POSSESSION_COMPLETED",
+    coordinates: [
+      [78.9571, 21.0912],
+      [78.9599, 21.0912],
+      [78.9599, 21.0935],
+      [78.9571, 21.0935],
+      [78.9571, 21.0912],
+    ],
+  },
+
+  {
+    id: "gis-parcel-005",
+    parcelId: "NAS-003102",
+    surveyNumber: "61/2B",
+    recordedRightHolder: "Priya Kulkarni",
+    district: "Nashik",
+    village: "Sinnar",
+    areaHectares: 1.31,
+    landUse: "Agricultural",
+    acquisitionStatus: "READY_FOR_POSSESSION",
+    coordinates: [
+      [73.9952, 19.8452],
+      [73.9982, 19.8452],
+      [73.9982, 19.8477],
+      [73.9952, 19.8477],
+      [73.9952, 19.8452],
+    ],
+  },
+];
