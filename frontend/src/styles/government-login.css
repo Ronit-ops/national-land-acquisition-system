@@ -1,0 +1,245 @@
+.government-login {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fa;
+  color: #172033;
+}
+
+.government-login__header {
+  border-bottom: 1px solid #dfe4ea;
+  background: #ffffff;
+}
+
+.government-login__header-inner {
+  width: min(1160px, calc(100% - 40px));
+  min-height: 72px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.government-login__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.government-login__brand-mark {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #123b68;
+  color: #ffffff;
+}
+
+.government-login__brand strong,
+.government-login__brand span {
+  display: block;
+}
+
+.government-login__brand strong {
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.government-login__brand span {
+  margin-top: 2px;
+  color: #667085;
+  font-size: 11px;
+}
+
+.government-login__secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #17653c;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.government-login__main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 50px 20px;
+}
+
+.government-login__card {
+  width: min(460px, 100%);
+  padding: 30px;
+  border: 1px solid #dbe2e9;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 14px 36px rgba(16, 24, 40, 0.07);
+}
+
+.government-login__icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  border-radius: 9px;
+  background: #edf4fa;
+  color: #123b68;
+}
+
+.government-login__eyebrow {
+  color: #35658f;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.government-login__card h1 {
+  margin: 8px 0 10px;
+  color: #172033;
+  font-size: 25px;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.government-login__description {
+  margin: 0;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.government-login__identity {
+  margin: 24px 0 18px;
+  padding: 15px;
+  display: flex;
+  gap: 12px;
+  border: 1px solid #dce5ed;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.government-login__identity-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #35658f;
+  border: 1px solid #dce5ed;
+}
+
+.government-login__identity-label {
+  display: block;
+  margin-bottom: 4px;
+  color: #8a96a3;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+}
+
+.government-login__identity strong {
+  display: block;
+  color: #344054;
+  font-size: 13px;
+}
+
+.government-login__identity p {
+  margin: 3px 0 0;
+  color: #667085;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.government-login__button {
+  width: 100%;
+  min-height: 45px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 7px;
+  background: #123b68;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.government-login__button:hover {
+  background: #0e3157;
+}
+
+.government-login__button:focus-visible {
+  outline: 3px solid rgba(53, 101, 143, 0.25);
+  outline-offset: 2px;
+}
+
+.government-login__notice {
+  margin-top: 16px;
+  padding: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  border: 1px solid #eadfca;
+  border-radius: 7px;
+  background: #fffbf3;
+  color: #8a5b12;
+}
+
+.government-login__notice p {
+  margin: 0;
+  color: #806b4b;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.government-login__notice strong {
+  color: #6e501d;
+}
+
+.government-login__back {
+  width: 100%;
+  margin-top: 17px;
+  padding: 5px;
+  border: 0;
+  background: transparent;
+  color: #667085;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.government-login__back:hover {
+  color: #123b68;
+}
+
+.government-login__footer {
+  min-height: 58px;
+  display: grid;
+  place-items: center;
+  border-top: 1px solid #dfe4ea;
+  background: #ffffff;
+  color: #98a2b3;
+  font-size: 9px;
+}
+
+@media (max-width: 560px) {
+  .government-login__header-inner {
+    width: calc(100% - 24px);
+  }
+
+  .government-login__secure {
+    display: none;
+  }
+
+  .government-login__card {
+    padding: 22px;
+  }
+}

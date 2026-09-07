@@ -1,313 +1,594 @@
 import {
   Activity,
+  AlertTriangle,
+  BarChart3,
   Bell,
-  Building2,
-  ClipboardList,
-  FileBarChart,
-  FileSearch,
+  BriefcaseBusiness,
+  ChevronDown,
+  ClipboardCheck,
+  FileText,
   FolderKanban,
+  Gavel,
   Globe2,
   LayoutDashboard,
+  LogOut,
   Map,
   Menu,
-  Mountain,
   Settings,
   ShieldCheck,
   Users,
-  Wallet,
+  WalletCards,
+  X,
 } from "lucide-react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+
+import {
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
+import { useMemo, useState } from "react";
+
+import {
+  hasModuleAccess,
+  type GovernmentModule,
+} from "../auth/roleAccess";
+
+import { useAuth } from "../auth/AuthContext";
+
 import "../styles/application.css";
 
-interface NavigationItem {
+type NavigationItem = {
   label: string;
   path: string;
   icon: typeof LayoutDashboard;
-}
+  module: GovernmentModule;
+};
 
-const primaryNavigation: NavigationItem[] = [
-  {
-    label: "Command Center",
-    path: "/app",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Projects",
-    path: "/app/projects",
-    icon: FolderKanban,
-  },
-  {
-    label: "Land & Parcels",
-    path: "/app/land",
-    icon: Map,
-  },
-  {
-    label: "Acquisition",
-    path: "/app/acquisition",
-    icon: ClipboardList,
-  },
-  {
-    label: "Compensation",
-    path: "/app/compensation",
-    icon: Wallet,
-  },
-  {
-    label: "R&R",
-    path: "/app/rr",
-    icon: Users,
-  },
-  {
-    label: "Possession",
-    path: "/app/possession",
-    icon: Building2,
-  },
-];
-
-const intelligenceNavigation: NavigationItem[] = [
-  {
-    label: "GIS Intelligence",
-    path: "/app/gis",
-    icon: Map,
-  },
-  {
-    label: "Satellite",
-    path: "/app/satellite",
-    icon: Mountain,
-  },
-  {
-    label: "AI Alerts",
-    path: "/app/ai-alerts",
-    icon: Activity,
-  },
-  {
-    label: "Field Verification",
-    path: "/app/field-verification",
-    icon: ShieldCheck,
-  },
-];
-
-const governanceNavigation: NavigationItem[] = [
-  {
-    label: "Documents",
-    path: "/app/documents",
-    icon: FileSearch,
-  },
-  {
-    label: "Reports",
-    path: "/app/reports",
-    icon: FileBarChart,
-  },
-  {
-    label: "Audit & Traceability",
-    path: "/app/audit",
-    icon: FileSearch,
-  },
-];
-
-function ApplicationNavigation({
-  items,
-}: {
+type NavigationGroup = {
+  label: string;
   items: NavigationItem[];
-}) {
-  return (
-    <nav className="application-sidebar__nav">
-      {items.map((item) => {
-        const Icon = item.icon;
+};
 
-        return (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            end={item.path === "/app"}
-            className={({ isActive }) =>
-              `application-sidebar__link ${
-                isActive ? "application-sidebar__link--active" : ""
-              }`
-            }
-          >
-            <span className="application-sidebar__link-icon">
-              <Icon size={15} />
-            </span>
+const navigationGroups: NavigationGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      {
+        label: "Command Center",
+        path: "/app",
+        icon: LayoutDashboard,
+        module: "COMMAND_CENTER",
+      },
+    ],
+  },
 
-            <span>{item.label}</span>
-          </NavLink>
-        );
-      })}
-    </nav>
-  );
-}
+  {
+    label: "Operations",
+    items: [
+      {
+        label: "Projects",
+        path: "/app/projects",
+        icon: FolderKanban,
+        module: "PROJECTS",
+      },
+      {
+        label: "Land & Parcels",
+        path: "/app/land",
+        icon: Map,
+        module: "LAND_PARCELS",
+      },
+      {
+        label: "Acquisition",
+        path: "/app/acquisition",
+        icon: BriefcaseBusiness,
+        module: "ACQUISITION",
+      },
+      {
+        label: "Proceedings",
+        path: "/app/proceedings",
+        icon: Gavel,
+        module: "PROCEEDINGS",
+      },
+      {
+        label: "Compensation",
+        path: "/app/compensation",
+        icon: WalletCards,
+        module: "COMPENSATION",
+      },
+      {
+        label: "R&R",
+        path: "/app/rr",
+        icon: Activity,
+        module: "RR",
+      },
+      {
+        label: "Possession",
+        path: "/app/possession",
+        icon: ClipboardCheck,
+        module: "POSSESSION",
+      },
+    ],
+  },
+
+  {
+    label: "Intelligence",
+    items: [
+      {
+        label: "GIS Intelligence",
+        path: "/app/gis",
+        icon: Globe2,
+        module: "GIS",
+      },
+      {
+        label: "Satellite",
+        path: "/app/satellite",
+        icon: Globe2,
+        module: "SATELLITE",
+      },
+      {
+        label: "AI Alerts",
+        path: "/app/ai-alerts",
+        icon: AlertTriangle,
+        module: "AI_ALERTS",
+      },
+      {
+        label: "Field Verification",
+        path: "/app/field-verification",
+        icon: ClipboardCheck,
+        module: "FIELD_VERIFICATION",
+      },
+    ],
+  },
+
+  {
+    label: "Governance",
+    items: [
+      {
+        label: "Documents",
+        path: "/app/documents",
+        icon: FileText,
+        module: "DOCUMENTS",
+      },
+      {
+        label: "Reports",
+        path: "/app/reports",
+        icon: BarChart3,
+        module: "REPORTS",
+      },
+      {
+        label: "Audit & Traceability",
+        path: "/app/audit",
+        icon: ShieldCheck,
+        module: "AUDIT",
+      },
+      {
+        label: "Government Users",
+        path: "/app/users",
+        icon: Users,
+        module: "USER_MANAGEMENT",
+      },
+    ],
+  },
+];
 
 function ApplicationLayout() {
+  const { user, accessPolicy, logout } = useAuth();
+
   const location = useLocation();
 
-  const currentPath = location.pathname;
+  const navigate = useNavigate();
 
-  let currentTitle = "Command Center";
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (currentPath.startsWith("/app/projects")) {
-    currentTitle = "Projects";
-  } else if (currentPath.startsWith("/app/land")) {
-    currentTitle = "Land & Parcels";
-  } else if (currentPath.startsWith("/app/acquisition")) {
-    currentTitle = "Acquisition";
-  } else if (currentPath.startsWith("/app/compensation")) {
-    currentTitle = "Compensation";
-  } else if (currentPath.startsWith("/app/rr")) {
-    currentTitle = "Rehabilitation & Resettlement";
-  } else if (currentPath.startsWith("/app/possession")) {
-    currentTitle = "Possession";
-  } else if (currentPath.startsWith("/app/gis")) {
-    currentTitle = "GIS Intelligence";
-  } else if (currentPath.startsWith("/app/satellite")) {
-    currentTitle = "Satellite Intelligence";
-  } else if (currentPath.startsWith("/app/ai-alerts")) {
-    currentTitle = "AI Alerts";
-  } else if (currentPath.startsWith("/app/field-verification")) {
-    currentTitle = "Field Verification";
-  } else if (currentPath.startsWith("/app/documents")) {
-    currentTitle = "Documents";
-  } else if (currentPath.startsWith("/app/reports")) {
-    currentTitle = "Reports";
-  } else if (currentPath.startsWith("/app/audit")) {
-    currentTitle = "Audit & Traceability";
-  }
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const visibleGroups = useMemo(
+    () =>
+      navigationGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter(
+            (item) =>
+              user &&
+              hasModuleAccess(user.role, item.module),
+          ),
+        }))
+        .filter((group) => group.items.length > 0),
+    [user],
+  );
+
+  const initials = user
+    ? user.name
+        .split(" ")
+        .map((part) => part.charAt(0))
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "GU";
+
+  const currentModule =
+    visibleGroups
+      .flatMap((group) => group.items)
+      .find((item) =>
+        item.path === "/app"
+          ? location.pathname === "/app"
+          : location.pathname.startsWith(item.path),
+      );
+
+  const handleLogout = () => {
+    setProfileOpen(false);
+    setSidebarOpen(false);
+
+    logout();
+
+    navigate("/login", {
+      replace: true,
+    });
+  };
 
   return (
     <div className="application-shell">
-      <aside className="application-sidebar">
-        <NavLink to="/app" className="application-sidebar__brand">
-          <span className="application-sidebar__brand-mark">
-            <Globe2 size={19} />
-          </span>
+      {/* =====================================================
+          MOBILE SIDEBAR BACKDROP
+          ===================================================== */}
 
-          <span className="application-sidebar__brand-text">
+      {sidebarOpen && (
+        <button
+          type="button"
+          className="application-sidebar__backdrop"
+          aria-label="Close navigation"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* =====================================================
+          SIDEBAR
+          ===================================================== */}
+
+      <aside
+        className={`application-sidebar ${
+          sidebarOpen
+            ? "application-sidebar--open"
+            : ""
+        }`}
+      >
+        {/* -------------------------------------------------
+            BRAND
+            ------------------------------------------------- */}
+
+        <div className="application-sidebar__brand">
+          <div className="application-sidebar__brand-mark">
+            <ShieldCheck size={21} />
+          </div>
+
+          <div className="application-sidebar__brand-text">
             <span className="application-sidebar__brand-title">
-              National Land Acquisition
+              NLAS
             </span>
 
             <span className="application-sidebar__brand-subtitle">
-              Management System
+              National Land Acquisition &amp; Management System
             </span>
+          </div>
+
+          <button
+            type="button"
+            className="application-sidebar__mobile-close"
+            aria-label="Close navigation"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* -------------------------------------------------
+            AUTHORIZED SCOPE
+            ------------------------------------------------- */}
+
+        <div className="application-sidebar__scope">
+          <span className="application-sidebar__scope-label">
+            Authorized Scope
           </span>
-        </NavLink>
+
+          <strong className="application-sidebar__scope-value">
+            {user?.jurisdiction ??
+              "Government Workspace"}
+          </strong>
+
+          {user?.jurisdictionType && (
+            <span className="application-sidebar__scope-type">
+              {user.jurisdictionType} jurisdiction
+            </span>
+          )}
+        </div>
+
+        {/* -------------------------------------------------
+            NAVIGATION
+            ------------------------------------------------- */}
 
         <div className="application-sidebar__content">
-          <section className="application-sidebar__section">
-            <p className="application-sidebar__section-title">
-              Operations
-            </p>
+          <nav
+            className="application-sidebar__navigation"
+            aria-label="Application navigation"
+          >
+            {visibleGroups.map((group) => (
+              <section
+                className="application-sidebar__section"
+                key={group.label}
+              >
+                <h2 className="application-sidebar__section-title">
+                  {group.label}
+                </h2>
 
-            <ApplicationNavigation items={primaryNavigation} />
-          </section>
+                <div className="application-sidebar__nav">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
 
-          <section className="application-sidebar__section">
-            <p className="application-sidebar__section-title">
-              Intelligence
-            </p>
+                    return (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        end={item.path === "/app"}
+                        className={({ isActive }) =>
+                          `application-sidebar__link ${
+                            isActive
+                              ? "application-sidebar__link--active"
+                              : ""
+                          }`
+                        }
+                        onClick={() =>
+                          setSidebarOpen(false)
+                        }
+                      >
+                        <span className="application-sidebar__link-icon">
+                          <Icon size={17} />
+                        </span>
 
-            <ApplicationNavigation items={intelligenceNavigation} />
-          </section>
-
-          <section className="application-sidebar__section">
-            <p className="application-sidebar__section-title">
-              Governance
-            </p>
-
-            <ApplicationNavigation items={governanceNavigation} />
-          </section>
+                        <span>{item.label}</span>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </nav>
         </div>
+
+        {/* -------------------------------------------------
+            SIDEBAR FOOTER
+            ------------------------------------------------- */}
 
         <div className="application-sidebar__footer">
           <div className="application-sidebar__status">
             <span className="application-sidebar__status-dot" />
 
             <div>
-              <strong>System Environment</strong>
-              <span>Demonstration workspace</span>
+              <strong>
+                System Operational
+              </strong>
+
+              <span>
+                NLAS Government Workspace
+              </span>
             </div>
+          </div>
+
+          <div className="application-sidebar__footer-config">
+            <Settings size={15} />
+
+            <span>
+              System Configuration
+            </span>
           </div>
         </div>
       </aside>
 
+      {/* =====================================================
+          MAIN APPLICATION
+          ===================================================== */}
+
       <div className="application-main">
+        {/* -------------------------------------------------
+            HEADER
+            ------------------------------------------------- */}
+
         <header className="application-header">
           <div className="application-header__left">
             <button
               type="button"
               className="application-mobile-menu"
-              aria-label="Open navigation menu"
+              aria-label="Open navigation"
+              onClick={() =>
+                setSidebarOpen(true)
+              }
             >
-              <Menu size={16} />
+              <Menu size={20} />
             </button>
 
             <div>
               <div className="application-breadcrumbs">
-                <span>National Platform</span>
-                <span>/</span>
+                <span>NLAS</span>
+
+                <span aria-hidden="true">
+                  /
+                </span>
+
                 <span className="application-breadcrumbs__current">
-                  {currentTitle}
+                  {currentModule?.label ??
+                    "Government Workspace"}
                 </span>
               </div>
 
-              <h1 className="application-header__title">
-                {currentTitle}
-              </h1>
+              <div className="application-header__title">
+                {currentModule?.label ??
+                  "Government Workspace"}
+              </div>
             </div>
           </div>
 
+          {/* -------------------------------------------------
+              HEADER ACTIONS
+              ------------------------------------------------- */}
+
           <div className="application-header__right">
+            {/* Global Search */}
+
             <label className="application-search">
-              <FileSearch size={14} aria-hidden="true" />
+              <SearchIcon />
 
               <input
                 type="search"
-                placeholder="Search projects, parcels, ULPIN..."
-                aria-label="Search projects, parcels and ULPIN"
+                placeholder="Search NLAS"
+                aria-label="Search NLAS"
               />
             </label>
+
+            {/* Notifications */}
 
             <button
               type="button"
               className="application-header__icon-button"
               aria-label="Notifications"
             >
-              <Bell size={15} />
+              <Bell size={17} />
 
-              <span
-                className="application-header__notification-dot"
-                aria-hidden="true"
-              />
+              <span className="application-header__notification-dot" />
             </button>
 
-            <button
-              type="button"
-              className="application-header__icon-button"
-              aria-label="Settings"
-            >
-              <Settings size={15} />
-            </button>
+            {/* User */}
 
             <div className="application-user">
-              <div className="application-user__avatar">DO</div>
+              <button
+                type="button"
+                className="application-user__trigger"
+                aria-expanded={profileOpen}
+                aria-haspopup="menu"
+                onClick={() =>
+                  setProfileOpen((value) => !value)
+                }
+              >
+                <div className="application-user__avatar">
+                  {initials}
+                </div>
 
-              <div className="application-user__info">
-                <span className="application-user__name">
-                  Demonstration Officer
-                </span>
+                <div className="application-user__info">
+                  <span className="application-user__name">
+                    {user?.name ??
+                      "Government User"}
+                  </span>
 
-                <span className="application-user__role">
-                  District Land Acquisition Officer
-                </span>
-              </div>
+                  <span className="application-user__role">
+                    {user?.designation ??
+                      "Authorized Officer"}
+                  </span>
+                </div>
+
+                <ChevronDown size={15} />
+              </button>
+
+              {profileOpen && (
+                <div
+                  className="application-user__menu"
+                  role="menu"
+                >
+                  <div className="application-user__menu-header">
+                    <strong>
+                      {user?.name ??
+                        "Government User"}
+                    </strong>
+
+                    <span>
+                      {user?.organization ??
+                        "Government Organization"}
+                    </span>
+                  </div>
+
+                  <div className="application-user__menu-context">
+                    <span>ROLE</span>
+
+                    <strong>
+                      {accessPolicy?.label ??
+                        user?.designation ??
+                        "Authorized Officer"}
+                    </strong>
+                  </div>
+
+                  <div className="application-user__menu-context">
+                    <span>JURISDICTION</span>
+
+                    <strong>
+                      {user?.jurisdiction ??
+                        "Not specified"}
+                    </strong>
+                  </div>
+
+                  <div className="application-user__menu-context">
+                    <span>JURISDICTION TYPE</span>
+
+                    <strong>
+                      {user?.jurisdictionType ??
+                        "Not specified"}
+                    </strong>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="application-user__logout"
+                    role="menuitem"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={15} />
+
+                    <span>
+                      Sign out
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
+
+        {/* -------------------------------------------------
+            CONTENT
+            ------------------------------------------------- */}
 
         <main className="application-content">
           <Outlet />
         </main>
       </div>
     </div>
+  );
+}
+
+/* =========================================================
+   SEARCH ICON
+   Kept local so the header remains lightweight and explicit.
+   ========================================================= */
+
+function SearchIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle
+        cx="11"
+        cy="11"
+        r="7"
+      />
+
+      <path d="m20 20-3.5-3.5" />
+    </svg>
   );
 }
 

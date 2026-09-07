@@ -1,21 +1,50 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { Navigate, createBrowserRouter } from "react-router-dom";
+
+import AccessGatewayPage from "../pages/AccessGatewayPage";
+import GovernmentLoginPage from "../pages/GovernmentLoginPage";
+import CitizenPortalPage from "../pages/CitizenPortalPage";
 
 import ApplicationLayout from "../layouts/ApplicationLayout";
+
 import CommandCenterPage from "../pages/CommandCenterPage";
+import ProceedingsPage from "../pages/ProceedingsPage";
 import CompensationPage from "../pages/CompensationPage";
-import GisPage from "../pages/GisPage";
-import PossessionPage from "../pages/PossessionPage";
 import RRPage from "../pages/RRPage";
+import PossessionPage from "../pages/PossessionPage";
+import FieldVerificationReviewPage from "../pages/FieldVerificationReviewPage";
+import GovernmentUsersPage from "../pages/GovernmentUsersPage";
+import GisPage from "../pages/GisPage";
+import AuditPage from "../pages/AuditPage";
+
+import DocumentManagementPage from "../features/documents/pages/DocumentManagementPage";
+import DecisionSupportPage from "../features/reports/pages/DecisionSupportPage";
+
+import ProtectedRoute from "../auth/ProtectedRoute";
+import ModuleRouteGuard from "../auth/ModuleRouteGuard";
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navigate to="/app" replace />,
+    element: <AccessGatewayPage />,
+  },
+
+  {
+    path: "/login",
+    element: <GovernmentLoginPage />,
+  },
+
+  {
+    path: "/citizen",
+    element: <CitizenPortalPage />,
   },
 
   {
     path: "/app",
-    element: <ApplicationLayout />,
+    element: (
+      <ProtectedRoute>
+        <ApplicationLayout />
+      </ProtectedRoute>
+    ),
 
     children: [
       {
@@ -24,105 +53,104 @@ export const router = createBrowserRouter([
       },
 
       {
-        path: "projects",
-        element: <PlaceholderPage title="Projects" />,
-      },
-
-      {
-        path: "land",
-        element: <PlaceholderPage title="Land & Parcels" />,
-      },
-
-      {
-        path: "acquisition",
-        element: <PlaceholderPage title="Acquisition" />,
-      },
-
-      {
         path: "proceedings",
         element: (
-          <PlaceholderPage title="Notifications, Objections & Hearings" />
+          <ModuleRouteGuard module="PROCEEDINGS">
+            <ProceedingsPage />
+          </ModuleRouteGuard>
         ),
       },
 
       {
         path: "compensation",
-        element: <CompensationPage />,
+        element: (
+          <ModuleRouteGuard module="COMPENSATION">
+            <CompensationPage />
+          </ModuleRouteGuard>
+        ),
       },
 
       {
         path: "rr",
-        element: <RRPage />,
+        element: (
+          <ModuleRouteGuard module="RR">
+            <RRPage />
+          </ModuleRouteGuard>
+        ),
       },
 
       {
         path: "possession",
-        element: <PossessionPage />,
+        element: (
+          <ModuleRouteGuard module="POSSESSION">
+            <PossessionPage />
+          </ModuleRouteGuard>
+        ),
       },
 
       {
         path: "gis",
-        element: <GisPage />,
-      },
-
-      {
-        path: "satellite",
         element: (
-          <PlaceholderPage title="Satellite Intelligence" />
+          <ModuleRouteGuard module="GIS">
+            <GisPage />
+          </ModuleRouteGuard>
         ),
       },
 
       {
-        path: "ai-alerts",
-        element: <PlaceholderPage title="AI Alerts" />,
-      },
-
-      {
-        path: "field-verification",
+        path: "field-verification/:verificationId",
         element: (
-          <PlaceholderPage title="Field Verification" />
+          <ModuleRouteGuard module="FIELD_VERIFICATION">
+            <FieldVerificationReviewPage />
+          </ModuleRouteGuard>
         ),
       },
 
       {
-        path: "documents",
-        element: <PlaceholderPage title="Documents" />,
-      },
-
-      {
-        path: "reports",
-        element: <PlaceholderPage title="Reports" />,
+        path: "users",
+        element: (
+          <ModuleRouteGuard module="USER_MANAGEMENT">
+            <GovernmentUsersPage />
+          </ModuleRouteGuard>
+        ),
       },
 
       {
         path: "audit",
         element: (
-          <PlaceholderPage title="Audit & Traceability" />
+          <ModuleRouteGuard module="AUDIT">
+            <AuditPage />
+          </ModuleRouteGuard>
         ),
+      },
+
+      {
+        path: "documents",
+        element: (
+          <ModuleRouteGuard module="DOCUMENTS">
+            <DocumentManagementPage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      {
+        path: "decision-support",
+        element: (
+          <ModuleRouteGuard module="REPORTS">
+            <DecisionSupportPage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      {
+        path: "*",
+        element: <Navigate to="/app" replace />,
       },
     ],
   },
 
   {
     path: "*",
-    element: <Navigate to="/app" replace />,
+    element: <AccessGatewayPage />,
   },
 ]);
-
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <section className="application-welcome">
-      <span className="application-welcome__eyebrow">
-        MODULE FOUNDATION
-      </span>
-
-      <h2>{title}</h2>
-
-      <p>
-        This module has been registered in the application
-        architecture and will be implemented in its
-        dedicated development step.
-      </p>
-    </section>
-  );
-}
