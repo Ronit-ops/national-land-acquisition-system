@@ -17,17 +17,34 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+
 import { findCitizenCase } from "../features/citizen/utils/citizenCaseLookup";
+
 import { getCitizenDocuments } from "../features/citizen/utils/citizenDocumentLookup";
+
+import {
+  getCitizenCaseTransparency,
+  getCitizenTransparencySummary,
+  getRecentCitizenUpdates,
+  getUpcomingCitizenHearings,
+  getPublishedCitizenProjects,
+} from "../features/citizen/utils/citizenTransparencyLookup";
+
 import type {
   CitizenCaseRecord,
   CitizenCaseStage,
   CitizenCaseStatus,
 } from "../features/citizen/types/citizenCase";
+
 import type {
   CitizenDocument,
   CitizenDocumentType,
 } from "../features/citizen/types/citizenDocument";
+
+import type {
+  CitizenPublication,
+  CitizenProjectTransparency,
+} from "../features/citizen/types/citizenTransparency";
 
 function formatDate(value: string | null): string {
   if (!value) {
@@ -97,6 +114,55 @@ function documentTypeLabel(type: CitizenDocumentType): string {
   return labels[type];
 }
 
+function publicationTypeLabel(
+  publication: CitizenPublication,
+): string {
+  const labels: Record<CitizenPublication["type"], string> = {
+    PROJECT: "Project",
+    NOTIFICATION: "Notification",
+    OBJECTION: "Objection",
+    HEARING: "Hearing",
+    AWARD: "Award",
+    COMPENSATION: "Compensation",
+    R_AND_R: "R&R",
+    POSSESSION: "Possession",
+    DOCUMENT: "Document",
+    CASE_UPDATE: "Case Update",
+  };
+
+  return labels[publication.type];
+}
+
+function sourceLabel(publication: CitizenPublication): string {
+  const labels: Record<CitizenPublication["source"], string> = {
+    OFFICIAL_RECORD: "Official Record",
+    PUBLISHED_NOTIFICATION: "Published Notification",
+    CASE_WORKFLOW: "Case Workflow",
+    CITIZEN_SUBMISSION: "Citizen Submission",
+    DEMONSTRATION_DATA: "Demonstration Data",
+  };
+
+  return labels[publication.source];
+}
+
+function projectStatusLabel(
+  project: CitizenProjectTransparency,
+): string {
+  const labels: Record<
+    CitizenProjectTransparency["projectStatus"],
+    string
+  > = {
+    PROPOSED: "Proposed",
+    REGISTERED: "Registered",
+    UNDER_ACQUISITION: "Under Acquisition",
+    IMPLEMENTATION: "Implementation",
+    COMPLETED: "Completed",
+    ON_HOLD: "On Hold",
+  };
+
+  return labels[project.projectStatus];
+}
+
 function CitizenPortalPage() {
   const [caseReference, setCaseReference] = useState("");
   const [selectedCase, setSelectedCase] =
@@ -111,7 +177,39 @@ function CitizenPortalPage() {
     return getCitizenDocuments(selectedCase.caseReference);
   }, [selectedCase]);
 
-  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+  const transparencySummary = useMemo(
+    () => getCitizenTransparencySummary(),
+    [],
+  );
+
+  const caseTransparency = useMemo(() => {
+    if (!selectedCase) {
+      return [];
+    }
+
+    return getCitizenCaseTransparency(
+      selectedCase.caseReference,
+    );
+  }, [selectedCase]);
+
+  const upcomingHearings = useMemo(
+    () => getUpcomingCitizenHearings().slice(0, 4),
+    [],
+  );
+
+  const recentUpdates = useMemo(
+    () => getRecentCitizenUpdates().slice(0, 6),
+    [],
+  );
+
+  const publicProjects = useMemo(
+    () => getPublishedCitizenProjects().slice(0, 4),
+    [],
+  );
+
+  function handleSearch(
+    event: React.FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     const record = findCitizenCase(caseReference);
@@ -126,7 +224,9 @@ function CitizenPortalPage() {
     setSearched(false);
   }
 
-  function handleDocumentAccess(document: CitizenDocument) {
+  function handleDocumentAccess(
+    document: CitizenDocument,
+  ) {
     if (document.status !== "AVAILABLE") {
       return;
     }
@@ -136,21 +236,33 @@ function CitizenPortalPage() {
     );
   }
 
+  function handlePublicationAccess(
+    publication: CitizenPublication,
+  ) {
+    window.alert(
+      `Citizen transparency record\n\n${publication.title}\n${publication.referenceNumber}\n\nSource: ${sourceLabel(publication)}\n\nThis demonstration environment does not connect to a live government document repository.`,
+    );
+  }
+
   return (
     <main className="citizen-page">
       <header className="citizen-header">
         <div className="citizen-header__inner">
           <div className="citizen-brand">
-            <div className="citizen-brand__mark" aria-hidden="true">
+            <div
+              className="citizen-brand__mark"
+              aria-hidden="true"
+            >
               <LandPlot size={21} />
             </div>
 
             <div>
               <span className="citizen-brand__title">
-                National Land Acquisition System
+                AAKAR | आकार
               </span>
+
               <span className="citizen-brand__subtitle">
-                Citizen Case Tracking Portal
+                National Land Acquisition &amp; Management System
               </span>
             </div>
           </div>
@@ -161,7 +273,10 @@ function CitizenPortalPage() {
             </span>
 
             <div className="citizen-header__security">
-              <ShieldCheck size={16} aria-hidden="true" />
+              <ShieldCheck
+                size={16}
+                aria-hidden="true"
+              />
               Secure Citizen Access
             </div>
           </div>
@@ -175,13 +290,16 @@ function CitizenPortalPage() {
               CITIZEN SERVICES
             </span>
 
-            <h1>Track your land acquisition case</h1>
+            <h1>
+              Track your land acquisition case
+            </h1>
 
             <p>
               View the current status of your acquisition case,
-              notifications, hearings, award, compensation,
-              rehabilitation and resettlement, and possession
-              information.
+              published notifications, hearings, award,
+              compensation, rehabilitation and resettlement,
+              possession information, and other citizen-visible
+              updates.
             </p>
           </div>
 
@@ -195,7 +313,9 @@ function CitizenPortalPage() {
                   CASE ACCESS
                 </span>
 
-                <h2>Enter your case reference</h2>
+                <h2>
+                  Enter your case reference
+                </h2>
               </div>
 
               <div
@@ -211,7 +331,10 @@ function CitizenPortalPage() {
             </label>
 
             <div className="citizen-search-card__input">
-              <Search size={18} aria-hidden="true" />
+              <Search
+                size={18}
+                aria-hidden="true"
+              />
 
               <input
                 id="case-reference"
@@ -230,7 +353,11 @@ function CitizenPortalPage() {
               className="citizen-primary-button"
             >
               View Case Status
-              <ArrowRight size={17} aria-hidden="true" />
+
+              <ArrowRight
+                size={17}
+                aria-hidden="true"
+              />
             </button>
 
             <p className="citizen-search-card__help">
@@ -250,15 +377,400 @@ function CitizenPortalPage() {
               </div>
 
               <div>
-                <strong>Case not found</strong>
+                <strong>
+                  Case not found
+                </strong>
 
                 <p>
-                  We could not find a case matching that reference
-                  in the current demonstration environment. Please
-                  check the reference and try again.
+                  We could not find a case matching that
+                  reference in the current demonstration
+                  environment. Please check the reference and
+                  try again.
                 </p>
               </div>
             </section>
+          )}
+
+          {!searched && (
+            <>
+              <section className="citizen-section">
+                <div className="citizen-section__heading">
+                  <div>
+                    <span className="citizen-eyebrow">
+                      PUBLIC TRANSPARENCY
+                    </span>
+
+                    <h2>
+                      Published land acquisition information
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="citizen-overview-grid">
+                  <article className="citizen-overview-card">
+                    <div className="citizen-overview-card__icon">
+                      <FileText size={19} />
+                    </div>
+
+                    <span>
+                      Published Notifications
+                    </span>
+
+                    <strong>
+                      {
+                        transparencySummary.publishedNotifications
+                      }
+                    </strong>
+
+                    <small>
+                      Citizen-visible publications
+                    </small>
+                  </article>
+
+                  <article className="citizen-overview-card">
+                    <div className="citizen-overview-card__icon">
+                      <CalendarDays size={19} />
+                    </div>
+
+                    <span>
+                      Upcoming Hearings
+                    </span>
+
+                    <strong>
+                      {transparencySummary.upcomingHearings}
+                    </strong>
+
+                    <small>
+                      Published hearing information
+                    </small>
+                  </article>
+
+                  <article className="citizen-overview-card">
+                    <div className="citizen-overview-card__icon">
+                      <ClipboardList size={19} />
+                    </div>
+
+                    <span>
+                      Active Cases
+                    </span>
+
+                    <strong>
+                      {transparencySummary.activeCases}
+                    </strong>
+
+                    <small>
+                      Citizen-visible case information
+                    </small>
+                  </article>
+
+                  <article className="citizen-overview-card">
+                    <div className="citizen-overview-card__icon">
+                      <FileCheck2 size={19} />
+                    </div>
+
+                    <span>
+                      Available Documents
+                    </span>
+
+                    <strong>
+                      {transparencySummary.availableDocuments}
+                    </strong>
+
+                    <small>
+                      Published for citizen access
+                    </small>
+                  </article>
+                </div>
+              </section>
+
+              <section className="citizen-section">
+                <div className="citizen-section__heading">
+                  <div>
+                    <span className="citizen-eyebrow">
+                      PUBLIC PROJECTS
+                    </span>
+
+                    <h2>
+                      Projects with published information
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="citizen-status-grid">
+                  {publicProjects.map((project) => (
+                    <article
+                      key={project.projectId}
+                      className="citizen-status-card"
+                    >
+                      <div className="citizen-status-card__header">
+                        <div className="citizen-status-card__icon">
+                          <LandPlot size={19} />
+                        </div>
+
+                        <div>
+                          <span>
+                            {project.district}
+                          </span>
+
+                          <strong>
+                            {project.projectName}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className="citizen-status-card__rows">
+                        <div>
+                          <span>
+                            Authority
+                          </span>
+
+                          <strong>
+                            {project.projectAuthority}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            Status
+                          </span>
+
+                          <strong>
+                            {projectStatusLabel(project)}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            Affected parcels
+                          </span>
+
+                          <strong>
+                            {project.totalAffectedParcels}
+                          </strong>
+                        </div>
+
+                        <div>
+                          <span>
+                            Published updates
+                          </span>
+
+                          <strong>
+                            {project.citizenVisibleUpdates}
+                          </strong>
+                        </div>
+
+                        <div className="citizen-status-card__full-row">
+                          <span>
+                            Latest publication
+                          </span>
+
+                          <strong>
+                            {formatDate(
+                              project.lastPublishedUpdate,
+                            )}
+                          </strong>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
+              <section className="citizen-section">
+                <div className="citizen-section__heading">
+                  <div>
+                    <span className="citizen-eyebrow">
+                      HEARINGS
+                    </span>
+
+                    <h2>
+                      Upcoming published hearings
+                    </h2>
+                  </div>
+                </div>
+
+                {upcomingHearings.length > 0 ? (
+                  <div className="citizen-document-list">
+                    {upcomingHearings.map(
+                      (publication) => (
+                        <article
+                          key={publication.id}
+                          className="citizen-document-card"
+                        >
+                          <div className="citizen-document-card__icon">
+                            <CalendarDays
+                              size={20}
+                              aria-hidden="true"
+                            />
+                          </div>
+
+                          <div className="citizen-document-card__body">
+                            <div className="citizen-document-card__top">
+                              <div>
+                                <span className="citizen-document-type">
+                                  HEARING
+                                </span>
+
+                                <h3>
+                                  {publication.title}
+                                </h3>
+                              </div>
+
+                              <span className="citizen-document-status citizen-document-status--available">
+                                Published
+                              </span>
+                            </div>
+
+                            <p>
+                              {publication.description}
+                            </p>
+
+                            <div className="citizen-document-card__meta">
+                              <span>
+                                Ref.{" "}
+                                {publication.referenceNumber}
+                              </span>
+
+                              <span>
+                                Effective{" "}
+                                {formatDate(
+                                  publication.effectiveDate,
+                                )}
+                              </span>
+
+                              <span>
+                                {sourceLabel(publication)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="citizen-document-action"
+                            onClick={() =>
+                              handlePublicationAccess(
+                                publication,
+                              )
+                            }
+                          >
+                            <ArrowRight
+                              size={16}
+                              aria-hidden="true"
+                            />
+
+                            View
+                          </button>
+                        </article>
+                      ),
+                    )}
+                  </div>
+                ) : (
+                  <div className="citizen-documents-empty">
+                    <CalendarDays size={23} />
+
+                    <strong>
+                      No upcoming hearings published
+                    </strong>
+
+                    <p>
+                      Published hearing information will
+                      appear here when available.
+                    </p>
+                  </div>
+                )}
+              </section>
+
+              <section className="citizen-section">
+                <div className="citizen-section__heading">
+                  <div>
+                    <span className="citizen-eyebrow">
+                      RECENT UPDATES
+                    </span>
+
+                    <h2>
+                      Latest citizen-visible publications
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="citizen-document-list">
+                  {recentUpdates.map(
+                    (publication) => (
+                      <article
+                        key={publication.id}
+                        className="citizen-document-card"
+                      >
+                        <div className="citizen-document-card__icon">
+                          <FileCheck2
+                            size={20}
+                            aria-hidden="true"
+                          />
+                        </div>
+
+                        <div className="citizen-document-card__body">
+                          <div className="citizen-document-card__top">
+                            <div>
+                              <span className="citizen-document-type">
+                                {publicationTypeLabel(
+                                  publication,
+                                )}
+                              </span>
+
+                              <h3>
+                                {publication.title}
+                              </h3>
+                            </div>
+
+                            <span className="citizen-document-status citizen-document-status--available">
+                              Published
+                            </span>
+                          </div>
+
+                          <p>
+                            {publication.description}
+                          </p>
+
+                          <div className="citizen-document-card__meta">
+                            <span>
+                              Ref.{" "}
+                              {publication.referenceNumber}
+                            </span>
+
+                            <span>
+                              Published{" "}
+                              {formatDate(
+                                publication.publishedDate,
+                              )}
+                            </span>
+
+                            <span>
+                              {sourceLabel(publication)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="citizen-document-action"
+                          onClick={() =>
+                            handlePublicationAccess(
+                              publication,
+                            )
+                          }
+                        >
+                          <ArrowRight
+                            size={16}
+                            aria-hidden="true"
+                          />
+
+                          View
+                        </button>
+                      </article>
+                    ),
+                  )}
+                </div>
+              </section>
+            </>
           )}
 
           {selectedCase && (
@@ -270,7 +782,9 @@ function CitizenPortalPage() {
                   </span>
 
                   <div className="citizen-case-header__title-row">
-                    <h2>{selectedCase.caseReference}</h2>
+                    <h2>
+                      {selectedCase.caseReference}
+                    </h2>
 
                     <span
                       className={`citizen-status citizen-status--${selectedCase.status.toLowerCase()}`}
@@ -279,7 +793,9 @@ function CitizenPortalPage() {
                     </span>
                   </div>
 
-                  <p>{selectedCase.projectName}</p>
+                  <p>
+                    {selectedCase.projectName}
+                  </p>
                 </div>
 
                 <button
@@ -299,11 +815,17 @@ function CitizenPortalPage() {
                     <LandPlot size={19} />
                   </div>
 
-                  <span>Parcel</span>
-                  <strong>{selectedCase.parcel.parcelId}</strong>
+                  <span>
+                    Parcel
+                  </span>
+
+                  <strong>
+                    {selectedCase.parcel.parcelId}
+                  </strong>
 
                   <small>
-                    Survey No. {selectedCase.parcel.surveyNumber}
+                    Survey No.{" "}
+                    {selectedCase.parcel.surveyNumber}
                   </small>
                 </article>
 
@@ -312,9 +834,17 @@ function CitizenPortalPage() {
                     <MapPin size={19} />
                   </div>
 
-                  <span>Location</span>
-                  <strong>{selectedCase.village}</strong>
-                  <small>{selectedCase.district}</small>
+                  <span>
+                    Location
+                  </span>
+
+                  <strong>
+                    {selectedCase.village}
+                  </strong>
+
+                  <small>
+                    {selectedCase.district}
+                  </small>
                 </article>
 
                 <article className="citizen-overview-card">
@@ -322,14 +852,21 @@ function CitizenPortalPage() {
                     <CalendarDays size={19} />
                   </div>
 
-                  <span>Current Stage</span>
+                  <span>
+                    Current Stage
+                  </span>
 
                   <strong>
-                    {stageLabel(selectedCase.currentStage)}
+                    {stageLabel(
+                      selectedCase.currentStage,
+                    )}
                   </strong>
 
                   <small>
-                    Updated {formatDate(selectedCase.lastUpdated)}
+                    Updated{" "}
+                    {formatDate(
+                      selectedCase.lastUpdated,
+                    )}
                   </small>
                 </article>
 
@@ -338,7 +875,9 @@ function CitizenPortalPage() {
                     <Users size={19} />
                   </div>
 
-                  <span>Recorded Right-Holder</span>
+                  <span>
+                    Recorded Right-Holder
+                  </span>
 
                   <strong>
                     {selectedCase.recordedRightHolder}
@@ -350,6 +889,101 @@ function CitizenPortalPage() {
                 </article>
               </section>
 
+              {caseTransparency.length > 0 && (
+                <section className="citizen-section">
+                  <div className="citizen-section__heading">
+                    <div>
+                      <span className="citizen-eyebrow">
+                        PUBLISHED CASE INFORMATION
+                      </span>
+
+                      <h2>
+                        Official updates for this case
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="citizen-document-list">
+                    {caseTransparency.map(
+                      (publication) => (
+                        <article
+                          key={publication.id}
+                          className="citizen-document-card"
+                        >
+                          <div className="citizen-document-card__icon">
+                            <FileCheck2
+                              size={20}
+                              aria-hidden="true"
+                            />
+                          </div>
+
+                          <div className="citizen-document-card__body">
+                            <div className="citizen-document-card__top">
+                              <div>
+                                <span className="citizen-document-type">
+                                  {publicationTypeLabel(
+                                    publication,
+                                  )}
+                                </span>
+
+                                <h3>
+                                  {publication.title}
+                                </h3>
+                              </div>
+
+                              <span className="citizen-document-status citizen-document-status--available">
+                                Published
+                              </span>
+                            </div>
+
+                            <p>
+                              {publication.description}
+                            </p>
+
+                            <div className="citizen-document-card__meta">
+                              <span>
+                                Ref.{" "}
+                                {publication.referenceNumber}
+                              </span>
+
+                              <span>
+                                Published{" "}
+                                {formatDate(
+                                  publication.publishedDate,
+                                )}
+                              </span>
+
+                              <span>
+                                {sourceLabel(
+                                  publication,
+                                )}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="citizen-document-action"
+                            onClick={() =>
+                              handlePublicationAccess(
+                                publication,
+                              )
+                            }
+                          >
+                            <ArrowRight
+                              size={16}
+                              aria-hidden="true"
+                            />
+
+                            View
+                          </button>
+                        </article>
+                      ),
+                    )}
+                  </div>
+                </section>
+              )}
+
               <section className="citizen-section">
                 <div className="citizen-section__heading">
                   <div>
@@ -357,52 +991,64 @@ function CitizenPortalPage() {
                       CASE PROGRESS
                     </span>
 
-                    <h2>Acquisition lifecycle</h2>
+                    <h2>
+                      Acquisition lifecycle
+                    </h2>
                   </div>
                 </div>
 
                 <div className="citizen-timeline">
-                  {selectedCase.timeline.map((item) => (
-                    <div
-                      key={item.id}
-                      className={`citizen-timeline__item ${
-                        item.current
-                          ? "citizen-timeline__item--current"
-                          : ""
-                      }`}
-                    >
-                      <div className="citizen-timeline__marker">
-                        {item.completed ? (
-                          <CheckCircle2
-                            size={19}
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <span />
-                        )}
-                      </div>
-
-                      <div className="citizen-timeline__body">
-                        <div className="citizen-timeline__top">
-                          <strong>{item.title}</strong>
-
-                          {item.date && (
-                            <time dateTime={item.date}>
-                              {formatDate(item.date)}
-                            </time>
+                  {selectedCase.timeline.map(
+                    (item) => (
+                      <div
+                        key={item.id}
+                        className={`citizen-timeline__item ${
+                          item.current
+                            ? "citizen-timeline__item--current"
+                            : ""
+                        }`}
+                      >
+                        <div className="citizen-timeline__marker">
+                          {item.completed ? (
+                            <CheckCircle2
+                              size={19}
+                              aria-hidden="true"
+                            />
+                          ) : (
+                            <span />
                           )}
                         </div>
 
-                        <p>{item.description}</p>
+                        <div className="citizen-timeline__body">
+                          <div className="citizen-timeline__top">
+                            <strong>
+                              {item.title}
+                            </strong>
 
-                        {item.current && (
-                          <span className="citizen-current-label">
-                            Current stage
-                          </span>
-                        )}
+                            {item.date && (
+                              <time
+                                dateTime={item.date}
+                              >
+                                {formatDate(
+                                  item.date,
+                                )}
+                              </time>
+                            )}
+                          </div>
+
+                          <p>
+                            {item.description}
+                          </p>
+
+                          {item.current && (
+                            <span className="citizen-current-label">
+                              Current stage
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ),
+                  )}
                 </div>
               </section>
 
@@ -414,7 +1060,9 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Notification</span>
+                      <span>
+                        Notification
+                      </span>
 
                       <strong>
                         {selectedCase.notification.type}
@@ -424,15 +1072,22 @@ function CitizenPortalPage() {
 
                   <div className="citizen-status-card__rows">
                     <div>
-                      <span>Reference</span>
+                      <span>
+                        Reference
+                      </span>
 
                       <strong>
-                        {selectedCase.notification.referenceNumber}
+                        {
+                          selectedCase.notification
+                            .referenceNumber
+                        }
                       </strong>
                     </div>
 
                     <div>
-                      <span>Status</span>
+                      <span>
+                        Status
+                      </span>
 
                       <strong>
                         {selectedCase.notification.status.replace(
@@ -443,21 +1098,27 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Issued</span>
+                      <span>
+                        Issued
+                      </span>
 
                       <strong>
                         {formatDate(
-                          selectedCase.notification.issueDate,
+                          selectedCase.notification
+                            .issueDate,
                         )}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Served</span>
+                      <span>
+                        Served
+                      </span>
 
                       <strong>
                         {formatDate(
-                          selectedCase.notification.serviceDate,
+                          selectedCase.notification
+                            .serviceDate,
                         )}
                       </strong>
                     </div>
@@ -471,7 +1132,9 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Objection & Hearing</span>
+                      <span>
+                        Objection &amp; Hearing
+                      </span>
 
                       <strong>
                         {selectedCase.objection.id
@@ -483,7 +1146,9 @@ function CitizenPortalPage() {
 
                   <div className="citizen-status-card__rows">
                     <div>
-                      <span>Objection</span>
+                      <span>
+                        Objection
+                      </span>
 
                       <strong>
                         {selectedCase.objection.status.replace(
@@ -494,17 +1159,22 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Submitted</span>
+                      <span>
+                        Submitted
+                      </span>
 
                       <strong>
                         {formatDate(
-                          selectedCase.objection.submittedDate,
+                          selectedCase.objection
+                            .submittedDate,
                         )}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Hearing</span>
+                      <span>
+                        Hearing
+                      </span>
 
                       <strong>
                         {selectedCase.hearing.status.replace(
@@ -515,11 +1185,14 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Hearing date</span>
+                      <span>
+                        Hearing date
+                      </span>
 
                       <strong>
                         {formatDate(
-                          selectedCase.hearing.hearingDate,
+                          selectedCase.hearing
+                            .hearingDate,
                         )}
                       </strong>
                     </div>
@@ -533,7 +1206,9 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Award</span>
+                      <span>
+                        Award
+                      </span>
 
                       <strong>
                         {selectedCase.award.status.replace(
@@ -546,19 +1221,26 @@ function CitizenPortalPage() {
 
                   <div className="citizen-status-card__rows">
                     <div>
-                      <span>Award reference</span>
+                      <span>
+                        Award reference
+                      </span>
 
                       <strong>
-                        {selectedCase.award.referenceNumber ??
+                        {selectedCase.award
+                          .referenceNumber ??
                           "Not available"}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Award date</span>
+                      <span>
+                        Award date
+                      </span>
 
                       <strong>
-                        {formatDate(selectedCase.award.awardDate)}
+                        {formatDate(
+                          selectedCase.award.awardDate,
+                        )}
                       </strong>
                     </div>
                   </div>
@@ -571,7 +1253,9 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Compensation</span>
+                      <span>
+                        Compensation
+                      </span>
 
                       <strong>
                         {selectedCase.compensation.status.replace(
@@ -584,41 +1268,53 @@ function CitizenPortalPage() {
 
                   <div className="citizen-status-card__rows">
                     <div>
-                      <span>Awarded amount</span>
+                      <span>
+                        Awarded amount
+                      </span>
 
                       <strong>
                         {formatCurrency(
-                          selectedCase.compensation.awardedAmount,
+                          selectedCase.compensation
+                            .awardedAmount,
                         )}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Paid amount</span>
+                      <span>
+                        Paid amount
+                      </span>
 
                       <strong>
                         {formatCurrency(
-                          selectedCase.compensation.paidAmount,
+                          selectedCase.compensation
+                            .paidAmount,
                         )}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Pending amount</span>
+                      <span>
+                        Pending amount
+                      </span>
 
                       <strong>
                         {formatCurrency(
-                          selectedCase.compensation.pendingAmount,
+                          selectedCase.compensation
+                            .pendingAmount,
                         )}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Payment date</span>
+                      <span>
+                        Payment date
+                      </span>
 
                       <strong>
                         {formatDate(
-                          selectedCase.compensation.paymentDate,
+                          selectedCase.compensation
+                            .paymentDate,
                         )}
                       </strong>
                     </div>
@@ -632,7 +1328,9 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Rehabilitation & Resettlement</span>
+                      <span>
+                        Rehabilitation &amp; Resettlement
+                      </span>
 
                       <strong>
                         {selectedCase.rr.status.replace(
@@ -645,17 +1343,22 @@ function CitizenPortalPage() {
 
                   <div className="citizen-status-card__rows">
                     <div>
-                      <span>Assistance</span>
+                      <span>
+                        Assistance
+                      </span>
 
                       <strong>
                         {formatCurrency(
-                          selectedCase.rr.assistanceAmount,
+                          selectedCase.rr
+                            .assistanceAmount,
                         )}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Relocation</span>
+                      <span>
+                        Relocation
+                      </span>
 
                       <strong>
                         {selectedCase.rr.relocationStatus.replace(
@@ -666,7 +1369,9 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Rehabilitation</span>
+                      <span>
+                        Rehabilitation
+                      </span>
 
                       <strong>
                         {selectedCase.rr.rehabilitationStatus.replace(
@@ -677,10 +1382,13 @@ function CitizenPortalPage() {
                     </div>
 
                     <div className="citizen-status-card__full-row">
-                      <span>Package</span>
+                      <span>
+                        Package
+                      </span>
 
                       <strong>
-                        {selectedCase.rr.packageDescription ??
+                        {selectedCase.rr
+                          .packageDescription ??
                           "Not available"}
                       </strong>
                     </div>
@@ -694,7 +1402,9 @@ function CitizenPortalPage() {
                     </div>
 
                     <div>
-                      <span>Possession</span>
+                      <span>
+                        Possession
+                      </span>
 
                       <strong>
                         {selectedCase.possession.status.replace(
@@ -707,31 +1417,40 @@ function CitizenPortalPage() {
 
                   <div className="citizen-status-card__rows">
                     <div>
-                      <span>Possession notice</span>
+                      <span>
+                        Possession notice
+                      </span>
 
                       <strong>
                         {formatDate(
-                          selectedCase.possession.noticeDate,
+                          selectedCase.possession
+                            .noticeDate,
                         )}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Handover date</span>
+                      <span>
+                        Handover date
+                      </span>
 
                       <strong>
                         {formatDate(
-                          selectedCase.possession.scheduledDate,
+                          selectedCase.possession
+                            .scheduledDate,
                         )}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Possession date</span>
+                      <span>
+                        Possession date
+                      </span>
 
                       <strong>
                         {formatDate(
-                          selectedCase.possession.possessionDate,
+                          selectedCase.possession
+                            .possessionDate,
                         )}
                       </strong>
                     </div>
@@ -746,85 +1465,103 @@ function CitizenPortalPage() {
                       OFFICIAL RECORDS
                     </span>
 
-                    <h2>Documents available for this case</h2>
+                    <h2>
+                      Documents available for this case
+                    </h2>
                   </div>
                 </div>
 
                 {documents.length > 0 ? (
                   <div className="citizen-document-list">
-                    {documents.map((document) => (
-                      <article
-                        key={document.id}
-                        className="citizen-document-card"
-                      >
-                        <div className="citizen-document-card__icon">
-                          {document.status === "AVAILABLE" ? (
-                            <FileCheck2
-                              size={20}
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <FileText
-                              size={20}
-                              aria-hidden="true"
-                            />
-                          )}
-                        </div>
+                    {documents.map(
+                      (document) => (
+                        <article
+                          key={document.id}
+                          className="citizen-document-card"
+                        >
+                          <div className="citizen-document-card__icon">
+                            {document.status ===
+                            "AVAILABLE" ? (
+                              <FileCheck2
+                                size={20}
+                                aria-hidden="true"
+                              />
+                            ) : (
+                              <FileText
+                                size={20}
+                                aria-hidden="true"
+                              />
+                            )}
+                          </div>
 
-                        <div className="citizen-document-card__body">
-                          <div className="citizen-document-card__top">
-                            <div>
-                              <span className="citizen-document-type">
-                                {documentTypeLabel(document.type)}
+                          <div className="citizen-document-card__body">
+                            <div className="citizen-document-card__top">
+                              <div>
+                                <span className="citizen-document-type">
+                                  {documentTypeLabel(
+                                    document.type,
+                                  )}
+                                </span>
+
+                                <h3>
+                                  {document.title}
+                                </h3>
+                              </div>
+
+                              <span
+                                className={`citizen-document-status citizen-document-status--${document.status.toLowerCase()}`}
+                              >
+                                {document.status.replace(
+                                  /_/g,
+                                  " ",
+                                )}
                               </span>
-
-                              <h3>{document.title}</h3>
                             </div>
 
-                            <span
-                              className={`citizen-document-status citizen-document-status--${document.status.toLowerCase()}`}
-                            >
-                              {document.status.replace(
-                                /_/g,
-                                " ",
-                              )}
-                            </span>
+                            <p>
+                              {document.description}
+                            </p>
+
+                            <div className="citizen-document-card__meta">
+                              <span>
+                                Ref.{" "}
+                                {document.referenceNumber}
+                              </span>
+
+                              <span>
+                                {formatDate(
+                                  document.issueDate,
+                                )}
+                              </span>
+                            </div>
                           </div>
 
-                          <p>{document.description}</p>
+                          <button
+                            type="button"
+                            className="citizen-document-action"
+                            disabled={
+                              document.status !==
+                              "AVAILABLE"
+                            }
+                            onClick={() =>
+                              handleDocumentAccess(
+                                document,
+                              )
+                            }
+                          >
+                            <Download
+                              size={16}
+                              aria-hidden="true"
+                            />
 
-                          <div className="citizen-document-card__meta">
-                            <span>
-                              Ref. {document.referenceNumber}
-                            </span>
-
-                            <span>
-                              {formatDate(document.issueDate)}
-                            </span>
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          className="citizen-document-action"
-                          disabled={
-                            document.status !== "AVAILABLE"
-                          }
-                          onClick={() =>
-                            handleDocumentAccess(document)
-                          }
-                        >
-                          <Download
-                            size={16}
-                            aria-hidden="true"
-                          />
-
-                          {document.status === "AVAILABLE"
-                            ? "View"
-                            : "Processing"}
-                        </button>
-                      </article>
-                    ))}
+                            {document.status ===
+                            "AVAILABLE"
+                              ? "View"
+                              : "Processing"}
+                          </button>
+                        </article>
+                      ),
+                    )}
                   </div>
                 ) : (
                   <div className="citizen-documents-empty">
@@ -848,47 +1585,70 @@ function CitizenPortalPage() {
                     PARCEL INFORMATION
                   </span>
 
-                  <h2>Land parcel associated with this case</h2>
+                  <h2>
+                    Land parcel associated with this case
+                  </h2>
                 </div>
 
                 <div className="citizen-parcel-grid">
                   <div>
-                    <span>Parcel ID</span>
+                    <span>
+                      Parcel ID
+                    </span>
+
                     <strong>
                       {selectedCase.parcel.parcelId}
                     </strong>
                   </div>
 
                   <div>
-                    <span>Survey Number</span>
+                    <span>
+                      Survey Number
+                    </span>
+
                     <strong>
                       {selectedCase.parcel.surveyNumber}
                     </strong>
                   </div>
 
                   <div>
-                    <span>Area</span>
+                    <span>
+                      Area
+                    </span>
+
                     <strong>
-                      {selectedCase.parcel.areaHectares.toFixed(2)} ha
+                      {selectedCase.parcel.areaHectares.toFixed(
+                        2,
+                      )}{" "}
+                      ha
                     </strong>
                   </div>
 
                   <div>
-                    <span>Land Use</span>
+                    <span>
+                      Land Use
+                    </span>
+
                     <strong>
                       {selectedCase.parcel.landUse}
                     </strong>
                   </div>
 
                   <div>
-                    <span>Village</span>
+                    <span>
+                      Village
+                    </span>
+
                     <strong>
                       {selectedCase.parcel.village}
                     </strong>
                   </div>
 
                   <div>
-                    <span>District</span>
+                    <span>
+                      District
+                    </span>
+
                     <strong>
                       {selectedCase.parcel.district}
                     </strong>
@@ -897,7 +1657,10 @@ function CitizenPortalPage() {
               </section>
 
               <section className="citizen-information-note">
-                <Info size={19} aria-hidden="true" />
+                <Info
+                  size={19}
+                  aria-hidden="true"
+                />
 
                 <div>
                   <strong>
@@ -905,11 +1668,12 @@ function CitizenPortalPage() {
                   </strong>
 
                   <p>
-                    This portal displays only citizen-authorized
-                    case information. Internal officer remarks,
-                    internal workflow information, AI analysis,
-                    audit records and information belonging to
-                    other parties are not displayed here.
+                    This portal displays only officially
+                    published or citizen-authorized information.
+                    Internal officer remarks, internal workflow
+                    information, AI analysis, audit records,
+                    restricted records, and information belonging
+                    to other parties are not displayed here.
                   </p>
                 </div>
               </section>
@@ -922,7 +1686,9 @@ function CitizenPortalPage() {
                 <Search size={25} />
               </div>
 
-              <h2>Check your acquisition case status</h2>
+              <h2>
+                Check your acquisition case status
+              </h2>
 
               <p>
                 Enter the acquisition case reference provided in
@@ -933,21 +1699,33 @@ function CitizenPortalPage() {
               <div className="citizen-empty-state__steps">
                 <div>
                   <span>1</span>
-                  <strong>Enter reference</strong>
+                  <strong>
+                    Enter reference
+                  </strong>
                 </div>
 
-                <ArrowRight size={16} aria-hidden="true" />
+                <ArrowRight
+                  size={16}
+                  aria-hidden="true"
+                />
 
                 <div>
                   <span>2</span>
-                  <strong>Verify access</strong>
+                  <strong>
+                    Verify access
+                  </strong>
                 </div>
 
-                <ArrowRight size={16} aria-hidden="true" />
+                <ArrowRight
+                  size={16}
+                  aria-hidden="true"
+                />
 
                 <div>
                   <span>3</span>
-                  <strong>Track your case</strong>
+                  <strong>
+                    Track your case
+                  </strong>
                 </div>
               </div>
             </section>
@@ -959,11 +1737,11 @@ function CitizenPortalPage() {
         <div className="citizen-container citizen-footer__inner">
           <div>
             <strong>
-              National Land Acquisition System
+              AAKAR | आकार
             </strong>
 
             <span>
-              Citizen-facing case tracking interface
+              Shaping land. Empowering development
             </span>
           </div>
 

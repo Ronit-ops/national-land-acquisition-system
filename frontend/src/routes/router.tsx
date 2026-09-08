@@ -16,6 +16,14 @@ import GovernmentUsersPage from "../pages/GovernmentUsersPage";
 import GisPage from "../pages/GisPage";
 import AuditPage from "../pages/AuditPage";
 
+import SatellitePage from "../pages/SatellitePage";
+import SatelliteComparisonPage from "../pages/SatelliteComparisonPage";
+import AIAlertReviewPage from "../pages/AIAlertReviewPage";
+
+import NotificationsPage from "../pages/NotificationsPage";
+import NotificationIssuancePage from "../pages/NotificationIssuancePage";
+import NotificationDeliveryPage from "../pages/NotificationDeliveryPage";
+
 import DocumentManagementPage from "../features/documents/pages/DocumentManagementPage";
 import DecisionSupportPage from "../features/reports/pages/DecisionSupportPage";
 
@@ -45,12 +53,33 @@ export const router = createBrowserRouter([
         <ApplicationLayout />
       </ProtectedRoute>
     ),
-
     children: [
       {
         index: true,
-        element: <CommandCenterPage />,
+        element: (
+          <Navigate
+            to="/app/command-center"
+            replace
+          />
+        ),
       },
+
+      /* =====================================================
+         COMMAND CENTER
+         ===================================================== */
+
+      {
+        path: "command-center",
+        element: (
+          <ModuleRouteGuard module="COMMAND_CENTER">
+            <CommandCenterPage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      /* =====================================================
+         PROCEEDINGS
+         ===================================================== */
 
       {
         path: "proceedings",
@@ -61,6 +90,10 @@ export const router = createBrowserRouter([
         ),
       },
 
+      /* =====================================================
+         COMPENSATION
+         ===================================================== */
+
       {
         path: "compensation",
         element: (
@@ -69,6 +102,10 @@ export const router = createBrowserRouter([
           </ModuleRouteGuard>
         ),
       },
+
+      /* =====================================================
+         R&R
+         ===================================================== */
 
       {
         path: "rr",
@@ -79,6 +116,10 @@ export const router = createBrowserRouter([
         ),
       },
 
+      /* =====================================================
+         POSSESSION
+         ===================================================== */
+
       {
         path: "possession",
         element: (
@@ -87,6 +128,36 @@ export const router = createBrowserRouter([
           </ModuleRouteGuard>
         ),
       },
+
+      /* =====================================================
+         FIELD VERIFICATION
+         ===================================================== */
+
+      {
+        path: "field-verification",
+        element: (
+          <ModuleRouteGuard module="FIELD_VERIFICATION">
+            <FieldVerificationReviewPage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      /* =====================================================
+         GOVERNMENT USERS
+         ===================================================== */
+
+      {
+        path: "government-users",
+        element: (
+          <ModuleRouteGuard module="USER_MANAGEMENT">
+            <GovernmentUsersPage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      /* =====================================================
+         GIS
+         ===================================================== */
 
       {
         path: "gis",
@@ -97,23 +168,9 @@ export const router = createBrowserRouter([
         ),
       },
 
-      {
-        path: "field-verification/:verificationId",
-        element: (
-          <ModuleRouteGuard module="FIELD_VERIFICATION">
-            <FieldVerificationReviewPage />
-          </ModuleRouteGuard>
-        ),
-      },
-
-      {
-        path: "users",
-        element: (
-          <ModuleRouteGuard module="USER_MANAGEMENT">
-            <GovernmentUsersPage />
-          </ModuleRouteGuard>
-        ),
-      },
+      /* =====================================================
+         AUDIT
+         ===================================================== */
 
       {
         path: "audit",
@@ -124,6 +181,10 @@ export const router = createBrowserRouter([
         ),
       },
 
+      /* =====================================================
+         DOCUMENTS
+         ===================================================== */
+
       {
         path: "documents",
         element: (
@@ -133,8 +194,12 @@ export const router = createBrowserRouter([
         ),
       },
 
+      /* =====================================================
+         REPORTS / DECISION SUPPORT
+         ===================================================== */
+
       {
-        path: "decision-support",
+        path: "reports",
         element: (
           <ModuleRouteGuard module="REPORTS">
             <DecisionSupportPage />
@@ -142,15 +207,71 @@ export const router = createBrowserRouter([
         ),
       },
 
+      /* =====================================================
+         SATELLITE INTELLIGENCE
+         ===================================================== */
+
       {
-        path: "*",
-        element: <Navigate to="/app" replace />,
+        path: "satellite",
+        element: (
+          <ModuleRouteGuard module="SATELLITE">
+            <SatellitePage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      {
+        path: "satellite/comparison",
+        element: (
+          <ModuleRouteGuard module="SATELLITE">
+            <SatelliteComparisonPage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      /* =====================================================
+         AI ALERT REVIEW
+         ===================================================== */
+
+      {
+        path: "satellite/alerts/:alertId",
+        element: (
+          <ModuleRouteGuard module="SATELLITE">
+            <AIAlertReviewPage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      /* =====================================================
+         NOTIFICATIONS
+         ===================================================== */
+
+      {
+        path: "notifications",
+        element: (
+          <ModuleRouteGuard module="NOTIFICATIONS">
+            <NotificationsPage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      {
+        path: "notifications/issuance",
+        element: (
+          <ModuleRouteGuard module="NOTIFICATIONS">
+            <NotificationIssuancePage />
+          </ModuleRouteGuard>
+        ),
+      },
+
+      {
+        path: "notifications/delivery",
+        element: (
+          <ModuleRouteGuard module="NOTIFICATIONS">
+            <NotificationDeliveryPage />
+          </ModuleRouteGuard>
+        ),
       },
     ],
-  },
-
-  {
-    path: "*",
-    element: <AccessGatewayPage />,
   },
 ]);

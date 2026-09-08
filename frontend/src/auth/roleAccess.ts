@@ -14,6 +14,7 @@ export type GovernmentModule =
   | "AI_ALERTS"
   | "FIELD_VERIFICATION"
   | "DOCUMENTS"
+  | "NOTIFICATIONS"
   | "REPORTS"
   | "AUDIT"
   | "USER_MANAGEMENT";
@@ -42,6 +43,7 @@ const COMMON_OPERATIONAL_MODULES: GovernmentModule[] = [
   "POSSESSION",
   "GIS",
   "DOCUMENTS",
+  "NOTIFICATIONS",
   "REPORTS",
 ];
 
@@ -81,6 +83,7 @@ export const ROLE_ACCESS_POLICIES: Record<
       "POSSESSION",
       "GIS",
       "DOCUMENTS",
+      "NOTIFICATIONS",
       "REPORTS",
       "FIELD_VERIFICATION",
     ],
@@ -104,6 +107,7 @@ export const ROLE_ACCESS_POLICIES: Record<
       "SATELLITE",
       "AI_ALERTS",
       "DOCUMENTS",
+      "NOTIFICATIONS",
       "REPORTS",
     ],
   },
@@ -121,6 +125,7 @@ export const ROLE_ACCESS_POLICIES: Record<
       "PROCEEDINGS",
       "GIS",
       "DOCUMENTS",
+      "NOTIFICATIONS",
       "REPORTS",
       "AUDIT",
     ],
@@ -140,6 +145,7 @@ export const ROLE_ACCESS_POLICIES: Record<
       "AI_ALERTS",
       "FIELD_VERIFICATION",
       "DOCUMENTS",
+      "NOTIFICATIONS",
     ],
   },
 
@@ -203,6 +209,7 @@ export function getModuleLabel(
     AI_ALERTS: "AI Alerts",
     FIELD_VERIFICATION: "Field Verification",
     DOCUMENTS: "Documents",
+    NOTIFICATIONS: "Notifications",
     REPORTS: "Reports",
     AUDIT: "Audit & Traceability",
     USER_MANAGEMENT: "Government Users",

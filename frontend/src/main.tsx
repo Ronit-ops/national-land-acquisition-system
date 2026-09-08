@@ -21,7 +21,7 @@ import "./styles/access-restricted.css";
 import "./styles/government-users.css";
 import "./styles/audit.css";
 import "./styles/documents.css";
-
+import "./styles/command-center.css";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>

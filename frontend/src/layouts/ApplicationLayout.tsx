@@ -152,6 +152,12 @@ const navigationGroups: NavigationGroup[] = [
         module: "DOCUMENTS",
       },
       {
+        label: "Notifications",
+        path: "/app/notifications",
+        icon: Bell,
+        module: "NOTIFICATIONS",
+      },
+      {
         label: "Reports",
         path: "/app/reports",
         icon: BarChart3,
@@ -177,11 +183,9 @@ function ApplicationLayout() {
   const { user, accessPolicy, logout } = useAuth();
 
   const location = useLocation();
-
   const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const [profileOpen, setProfileOpen] = useState(false);
 
   const visibleGroups = useMemo(
@@ -231,7 +235,7 @@ function ApplicationLayout() {
   return (
     <div className="application-shell">
       {/* =====================================================
-          MOBILE SIDEBAR BACKDROP
+          MOBILE BACKDROP
           ===================================================== */}
 
       {sidebarOpen && (
@@ -259,18 +263,24 @@ function ApplicationLayout() {
             ------------------------------------------------- */}
 
         <div className="application-sidebar__brand">
-          <div className="application-sidebar__brand-mark">
-            <ShieldCheck size={21} />
+          <div className="application-sidebar__brand-identity">
+            <div className="application-sidebar__brand-wordmark">
+              AAKAR
+            </div>
+
+            <div className="application-sidebar__brand-divider" />
+
+            <div className="application-sidebar__brand-hindi">
+              आकार
+            </div>
           </div>
 
-          <div className="application-sidebar__brand-text">
-            <span className="application-sidebar__brand-title">
-              NLAS
-            </span>
+          <div className="application-sidebar__brand-tagline">
+            Shaping land. Empowering development
+          </div>
 
-            <span className="application-sidebar__brand-subtitle">
-              National Land Acquisition &amp; Management System
-            </span>
+          <div className="application-sidebar__brand-system">
+            National Land Acquisition &amp; Management System
           </div>
 
           <button
@@ -288,20 +298,26 @@ function ApplicationLayout() {
             ------------------------------------------------- */}
 
         <div className="application-sidebar__scope">
-          <span className="application-sidebar__scope-label">
-            Authorized Scope
-          </span>
+          <div className="application-sidebar__scope-icon">
+            <ShieldCheck size={15} />
+          </div>
 
-          <strong className="application-sidebar__scope-value">
-            {user?.jurisdiction ??
-              "Government Workspace"}
-          </strong>
-
-          {user?.jurisdictionType && (
-            <span className="application-sidebar__scope-type">
-              {user.jurisdictionType} jurisdiction
+          <div className="application-sidebar__scope-content">
+            <span className="application-sidebar__scope-label">
+              Authorized scope
             </span>
-          )}
+
+            <strong className="application-sidebar__scope-value">
+              {user?.jurisdiction ??
+                "Government Workspace"}
+            </strong>
+
+            {user?.jurisdictionType && (
+              <span className="application-sidebar__scope-type">
+                {user.jurisdictionType} jurisdiction
+              </span>
+            )}
+          </div>
         </div>
 
         {/* -------------------------------------------------
@@ -343,10 +359,15 @@ function ApplicationLayout() {
                         }
                       >
                         <span className="application-sidebar__link-icon">
-                          <Icon size={17} />
+                          <Icon
+                            size={17}
+                            strokeWidth={1.9}
+                          />
                         </span>
 
-                        <span>{item.label}</span>
+                        <span className="application-sidebar__link-label">
+                          {item.label}
+                        </span>
                       </NavLink>
                     );
                   })}
@@ -370,13 +391,13 @@ function ApplicationLayout() {
               </strong>
 
               <span>
-                NLAS Government Workspace
+                Government workspace
               </span>
             </div>
           </div>
 
           <div className="application-sidebar__footer-config">
-            <Settings size={15} />
+            <Settings size={14} />
 
             <span>
               System Configuration
@@ -407,11 +428,16 @@ function ApplicationLayout() {
               <Menu size={20} />
             </button>
 
-            <div>
+            <div className="application-header__context">
               <div className="application-breadcrumbs">
-                <span>NLAS</span>
+                <span className="application-breadcrumbs__brand">
+                  AAKAR
+                </span>
 
-                <span aria-hidden="true">
+                <span
+                  className="application-breadcrumbs__separator"
+                  aria-hidden="true"
+                >
                   /
                 </span>
 
@@ -433,29 +459,38 @@ function ApplicationLayout() {
               ------------------------------------------------- */}
 
           <div className="application-header__right">
-            {/* Global Search */}
+            {/* Search */}
 
             <label className="application-search">
               <SearchIcon />
 
               <input
                 type="search"
-                placeholder="Search NLAS"
-                aria-label="Search NLAS"
+                placeholder="Search AAKAR"
+                aria-label="Search AAKAR"
               />
+
+              <span className="application-search__shortcut">
+                /
+              </span>
             </label>
 
-            {/* Notifications */}
+            {/* Notification */}
 
             <button
               type="button"
               className="application-header__icon-button"
               aria-label="Notifications"
+              onClick={() =>
+                navigate("/app/notifications")
+              }
             >
               <Bell size={17} />
 
               <span className="application-header__notification-dot" />
             </button>
+
+            <div className="application-header__divider" />
 
             {/* User */}
 
@@ -485,67 +520,89 @@ function ApplicationLayout() {
                   </span>
                 </div>
 
-                <ChevronDown size={15} />
+                <ChevronDown
+                  size={15}
+                  className="application-user__chevron"
+                />
               </button>
 
               {profileOpen && (
-                <div
-                  className="application-user__menu"
-                  role="menu"
-                >
-                  <div className="application-user__menu-header">
-                    <strong>
-                      {user?.name ??
-                        "Government User"}
-                    </strong>
-
-                    <span>
-                      {user?.organization ??
-                        "Government Organization"}
-                    </span>
-                  </div>
-
-                  <div className="application-user__menu-context">
-                    <span>ROLE</span>
-
-                    <strong>
-                      {accessPolicy?.label ??
-                        user?.designation ??
-                        "Authorized Officer"}
-                    </strong>
-                  </div>
-
-                  <div className="application-user__menu-context">
-                    <span>JURISDICTION</span>
-
-                    <strong>
-                      {user?.jurisdiction ??
-                        "Not specified"}
-                    </strong>
-                  </div>
-
-                  <div className="application-user__menu-context">
-                    <span>JURISDICTION TYPE</span>
-
-                    <strong>
-                      {user?.jurisdictionType ??
-                        "Not specified"}
-                    </strong>
-                  </div>
-
+                <>
                   <button
                     type="button"
-                    className="application-user__logout"
-                    role="menuitem"
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={15} />
+                    className="application-user__menu-backdrop"
+                    aria-label="Close profile menu"
+                    onClick={() =>
+                      setProfileOpen(false)
+                    }
+                  />
 
-                    <span>
-                      Sign out
-                    </span>
-                  </button>
-                </div>
+                  <div
+                    className="application-user__menu"
+                    role="menu"
+                  >
+                    <div className="application-user__menu-header">
+                      <div className="application-user__menu-avatar">
+                        {initials}
+                      </div>
+
+                      <div>
+                        <strong>
+                          {user?.name ??
+                            "Government User"}
+                        </strong>
+
+                        <span>
+                          {user?.organization ??
+                            "Government Organization"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="application-user__menu-divider" />
+
+                    <div className="application-user__menu-context">
+                      <span>ROLE</span>
+
+                      <strong>
+                        {accessPolicy?.label ??
+                          user?.designation ??
+                          "Authorized Officer"}
+                      </strong>
+                    </div>
+
+                    <div className="application-user__menu-context">
+                      <span>JURISDICTION</span>
+
+                      <strong>
+                        {user?.jurisdiction ??
+                          "Not specified"}
+                      </strong>
+                    </div>
+
+                    <div className="application-user__menu-context">
+                      <span>JURISDICTION TYPE</span>
+
+                      <strong>
+                        {user?.jurisdictionType ??
+                          "Not specified"}
+                      </strong>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="application-user__logout"
+                      role="menuitem"
+                      onClick={handleLogout}
+                    >
+                      <LogOut size={15} />
+
+                      <span>
+                        Sign out
+                      </span>
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -565,7 +622,6 @@ function ApplicationLayout() {
 
 /* =========================================================
    SEARCH ICON
-   Kept local so the header remains lightweight and explicit.
    ========================================================= */
 
 function SearchIcon() {
